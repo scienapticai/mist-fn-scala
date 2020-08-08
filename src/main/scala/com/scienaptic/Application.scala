@@ -1,4 +1,5 @@
 package com.scienaptic
+
 import mist.api._
 import mist.api.dsl._
 import mist.api.encoding.defaults._
@@ -16,12 +17,12 @@ object Application extends MistFn with Logging {
           .format("csv")
           .option("header", value = true)
           .load(filePath)
-          val fileName = filePath.split("\\.").dropRight(1).mkString(",")
-          val outputPath =  s"$fileName.parquet"
+        val fileName = filePath.split("\\.").dropRight(1).mkString(",")
+        val outputPath = s"$fileName.parquet"
         df.write.mode("overwrite").parquet(outputPath)
         outputPath
       }
       }
-      }.asHandle
+  }.asHandle
 
 }
