@@ -7,4 +7,4 @@
 
 ## How to run
 
-Build the artifact by running `sbt package`
+Build the artifact by running `sbt assembly`

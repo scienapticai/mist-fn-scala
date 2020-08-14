@@ -1,4 +1,5 @@
 package com.scienaptic
+
 import mist.api._
 import mist.api.dsl._
 import mist.api.encoding.defaults._
@@ -21,6 +22,6 @@ object Application extends MistFn with Logging {
         outputPath
       }
       }
-      }.asHandle
+  }.asHandle
 
 }
