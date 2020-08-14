@@ -8,15 +8,14 @@ object Application extends MistFn with Logging {
 
   override def handle: Handle = {
     withArgs(
-      arg[String]("inputPath")
+      arg[String]("inputPath") //Give complete hdfs path hdfs://<host:port>/filepath for parameter inputPath while running the job
     )
-      .onSparkSession { (path: String, spark: SparkSession) => {
-        val filePath = s"file://$path"
+      .onSparkSession { (filePath: String, spark: SparkSession) => {
         val df = spark.read
           .format("csv")
           .option("header", value = true)
           .load(filePath)
-          val fileName = filePath.split("\\.").dropRight(1).mkString(",")
+          val (fileName,_)  = filePath splitAt (filePath lastIndexOf '.')
           val outputPath =  s"$fileName.parquet"
         df.write.mode("overwrite").parquet(outputPath)
         outputPath
