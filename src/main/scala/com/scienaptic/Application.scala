@@ -34,12 +34,10 @@ object Application extends MistFn with Logging {
         //  conf.addResource(new Path("file://" + "/usr/local/hadoop/etc/hadoop" + "/core-site.xml")); // Replace with actual path
         //  conf.addResource(new Path("file://" + "/usr/local/hadoop/etc/hadoop" + "/hdfs-site.xml")); // Replace with actual path
 
-        conf.setBoolean("dfs.support.append", true)
-
         val fileSystem: FileSystem = FileSystem.get(conf)
 
         import scala.util.matching.Regex
-        val pattern: Regex = "/data/[0-9]+/[0-9]+/scores/[0-9]+".r
+        val pattern: Regex = raw"""hdfs://$host:$port$filesPath/[0-9]+/[0-9]+/scores/[0-9]+""".r
 
         @tailrec
         def rec(array: List[FileStatus], list: List[String]): List[String] = {
@@ -48,19 +46,21 @@ object Application extends MistFn with Logging {
             case ::(head, tl) =>
               if (pattern.findFirstIn(head.getPath.toString).isDefined) {
                 rec(tl, head.getPath.toString :: list)
-              } else if (head.isDirectory) {
+              } else if (head.isDirectory && !head.getPath.toString.contains("/models/")) {
                 rec(tl ++ fileSystem.listStatus(head.getPath).toList, list)
               } else {
                 rec(tl, list)
               }
           }
         }
+        logger.info(s"file path: $filesPath")
         val filePaths = rec(fileSystem.listStatus(new Path(filesPath)).toList, List.empty[String])
         val totalFiles = filePaths.length
+        logger.info(s"total files available: $totalFiles")
 
         import io.delta.tables._
         filePaths.foldLeft(0) { (acc, path) =>
-          logger.info(s"converting file number $acc out of $totalFiles to delta: $path")
+          logger.info(s"converting file number ${acc + 1} out of $totalFiles to delta: $path")
 
           // Convert un-partitioned parquet table at specified path
           Try(DeltaTable.convertToDelta(spark, s"parquet.`$path`")) match {

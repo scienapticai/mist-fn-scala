@@ -6,6 +6,8 @@ scalaVersion := "2.12.11"
 
 val sparkVersion = "2.4.2"
 
+resolvers += "Delta" at "https://dl.bintray.com/delta-io/delta/"
+
 assemblyMergeStrategy in assembly := {
   case PathList("META-INF", xs @ _*) => MergeStrategy.discard
   case x => MergeStrategy.first
