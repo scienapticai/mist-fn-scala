@@ -11,13 +11,12 @@ object Application extends MistFn with Logging {
   override def handle: Handle = {
     withArgs(
       arg[String]("inputPath")
-    ).onSparkSession { (path: String, spark: SparkSession) =>
+    ).onSparkSession { (filePath: String, spark: SparkSession) =>
       {
-        val filePath = s"file://$path"
         val df = spark.read
           .option("header", value = true)
           .csv(filePath)
-        val fileName = filePath.split("\\.").dropRight(1).mkString(",")
+        val (fileName,_) = filePath splitAt(filePath.lastIndexOf('.'))
         val outputPath = s"$fileName.parquet"
         df.write.mode("overwrite").parquet(outputPath)
         outputPath
